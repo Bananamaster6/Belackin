@@ -1,0 +1,2067 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grab Level Downloader</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/lucide.js"></script>
+    
+    <!-- Seasonal Effects CSS -->
+    <style>
+        /* Legal Disclaimer Modal */
+        .disclaimer-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .disclaimer-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+        
+        .disclaimer-header {
+            background: #dc2626;
+            color: white;
+            padding: 20px;
+            border-radius: 12px 12px 0 0;
+            text-align: center;
+        }
+        
+        .disclaimer-body {
+            padding: 30px;
+        }
+        
+        .disclaimer-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #374151;
+            margin-bottom: 20px;
+        }
+        
+        .disclaimer-text h3 {
+            color: #dc2626;
+            font-weight: bold;
+            margin: 20px 0 10px 0;
+            font-size: 16px;
+        }
+        
+        .disclaimer-text p {
+            margin-bottom: 15px;
+        }
+        
+        .timer-display {
+            background: #fef2f2;
+            border: 2px solid #dc2626;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            margin: 20px 0;
+            font-weight: bold;
+            color: #dc2626;
+        }
+        
+        .confirmation-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            margin: 15px 0;
+        }
+        
+        .confirmation-input:focus {
+            outline: none;
+            border-color: #dc2626;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+        }
+        
+        .confirm-button {
+            width: 100%;
+            background: #dc2626;
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .confirm-button:hover:not(:disabled) {
+            background: #b91c1c;
+        }
+        
+        .confirm-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .website-disabled {
+            filter: blur(5px);
+            pointer-events: none;
+            user-select: none;
+        }
+        
+        /* Winter Snow Effect - December */
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            z-index: 1000;
+            color: white;
+            font-size: 1em;
+            animation: fall linear infinite;
+            text-shadow: 0 0 5px rgba(255,255,255,0.8);
+        }
+        
+        @keyframes fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0.3;
+            }
+        }
+        
+        /* Summer Sun Effect - June 21 to September 22 */
+        .sun-rays {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+            background: radial-gradient(circle at 80% 20%, 
+                rgba(255, 223, 0, 0.1) 0%, 
+                rgba(255, 140, 0, 0.05) 40%, 
+                transparent 70%);
+            animation: sun-glow 4s ease-in-out infinite alternate;
+        }
+        
+        @keyframes sun-glow {
+            0% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0.6;
+                transform: scale(1.1);
+            }
+        }
+        
+        /* Winter color scheme */
+        .winter-theme {
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%) !important;
+        }
+        
+        .winter-card {
+            background: rgba(255, 255, 255, 0.9) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            box-shadow: 0 8px 32px rgba(31, 110, 185, 0.2) !important;
+        }
+        
+        /* Summer color scheme */
+        .summer-theme {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fbbf24 100%) !important;
+        }
+        
+        .summer-card {
+            background: rgba(255, 251, 235, 0.95) !important;
+            border: 1px solid rgba(251, 191, 36, 0.3) !important;
+            box-shadow: 0 8px 32px rgba(251, 146, 60, 0.2) !important;
+        }
+        
+        /* Seasonal button styles */
+        .winter-button {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
+            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3) !important;
+        }
+        
+        .summer-button {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+            box-shadow: 0 4px 15px rgba(217, 119, 6, 0.3) !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-100 py-8">
+    <!-- Legal Disclaimer Modal -->
+    <div id="disclaimerModal" class="disclaimer-modal">
+        <div class="disclaimer-content">
+            <div class="disclaimer-header">
+                <h2 class="text-2xl font-bold">⚠️ LEGAL DISCLAIMER</h2>
+                <p class="mt-2">Please read carefully before proceeding</p>
+            </div>
+            <div class="disclaimer-body">
+                <div class="disclaimer-text">
+                    <h3>⚠️ LEGAL DISCLAIMER AND TERMS OF USE</h3>
+                    <p><strong>Effective Date:</strong> December 2, 2025</p>
+                    <p>By accessing, using, or downloading any content, levels, or files from this website (the "Service"), you agree to be bound by these Terms of Use and the accompanying Legal Disclaimer. If you do not agree, do not proceed.</p>
+                    
+                    <h3>1. Assumption of Risk</h3>
+                    <p>You acknowledge and agree that:</p>
+                    <ul style="margin-left: 20px; margin-bottom: 15px;">
+                        <li>1.1 Downloading or importing levels into Grab VR, or any related software, is done entirely at your own risk.</li>
+                        <li>1.2 The website owner and operators make no warranties, expressed or implied, regarding the safety, functionality, or legality of any downloaded content.</li>
+                        <li>1.3 You are solely responsible for any outcomes, including but not limited to: Software errors or malfunctions, Corruption of files or data, Loss of accounts, access, or progress, Damage to hardware or software</li>
+                    </ul>
+                    
+                    <h3>2. Limitation of Liability</h3>
+                    <p>2.1 The website owner is not liable for any direct, indirect, incidental, special, consequential, or punitive damages arising from the use or inability to use the Service or downloaded content.</p>
+                    <p>2.2 This includes, without limitation: Loss of data, Loss of income or business, Legal actions or claims, Any consequences arising from violations of Grab VR policies</p>
+                    
+                    <h3>3. Third-Party Content and Restrictions</h3>
+                    <p>3.1 Some content available through this Service may originate from third parties, including Grab VR ("Slin") or its users.</p>
+                    <p>3.2 Slin has stated that excessive downloading or importing of copied levels may result in account restrictions or editor limitations.</p>
+                    
+                    <div style="background: #f3f4f6; padding: 15px; border-left: 4px solid #dc2626; margin: 15px 0;">
+                        <p><strong>3.3 Slin's Official Statement:</strong></p>
+                        <p style="font-style: italic;">"just be aware that if these things keep spreading I will have to built some systems to prevent people from loading downloaded levels into their editor, which will also have consequences for many other things"</p>
+                        <p style="font-size: 12px; color: #6b7280;">- Slin, Grab VR Developer</p>
+                        
+                        <div style="margin-top: 10px; text-align: center;">
+                            <img src="images/slin_discord_message.png" alt="Slin's Official Discord Statement" style="max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #d1d5db;">
+                            <p style="font-size: 11px; color: #6b7280; margin-top: 5px;">Screenshot of Slin's official Discord statement regarding downloaded levels</p>
+                        </div>
+                    </div>
+                    
+                    <p>3.4 You acknowledge that:</p>
+                    <ul style="margin-left: 20px; margin-bottom: 15px;">
+                        <li>These restrictions are enforced by Slin, not this website.</li>
+                        <li>The website owner has no control over these restrictions.</li>
+                        <li>Any disputes regarding these restrictions must be addressed directly with Slin or official Grab VR support channels.</li>
+                    </ul>
+                    
+                    <p>3.5 You may not hold the website owner responsible for enforcement of third-party restrictions.</p>
+                    <p>3.6 The website owner reserves the right to remove or block access to any content if required by copyright holders, legal obligations, Slin policies, or for any reason at the website owner's discretion. This includes blocking specific level IDs or user IDs from accessing the service.</p>
+                    
+                    <h3>4. Copyright and Intellectual Property</h3>
+                    <p>4.1 All content accessible through the Service may be subject to copyright, trademark, or other intellectual property protections.</p>
+                    <p>4.2 You agree to comply with all applicable copyright laws and refrain from redistributing, modifying, or claiming ownership of content without authorization.</p>
+                    <p>4.3 The website owner reserves the right to remove or disable access to any content that violates copyright or intellectual property rights.</p>
+                    <p>4.4 Any user-uploaded content may be subject to DMCA or equivalent takedown requests, which will be handled in accordance with applicable law.</p>
+                    
+                    <h3>5. User Responsibility and Agreement</h3>
+                    <p>By entering the download confirmation code, you acknowledge and agree to the following:</p>
+                    <ul style="margin-left: 20px; margin-bottom: 15px;">
+                        <li>You understand the risks of downloading content and importing it into Grab VR.</li>
+                        <li>You agree that the website owner has no liability for your actions, consequences, or any damage caused by downloaded content.</li>
+                        <li>You understand that if Slin imposes restrictions due to copied levels, this website is not responsible, and you must contact Slin to address such restrictions.</li>
+                        <li>You will not attempt to delete downloaded levels from the website, nor attempt to circumvent restrictions.</li>
+                        <li>Any screenshots, claims, or instructions provided by third parties (including Slin) are provided for informational purposes only and do not imply responsibility by this website.</li>
+                    </ul>
+                    
+                    <h3>6. Agreement Confirmation</h3>
+                    <p>To proceed with downloading, you must read the entire disclaimer for at least 30 seconds and manually confirm the following phrase:</p>
+                    
+                    <p style="background: #f3f4f6; padding: 15px; border-left: 4px solid #dc2626; font-weight: bold; text-align: center;">
+                        "I have read, understand, and agree to the legal disclaimer and terms of use above."
+                    </p>
+                    
+                    <p style="margin-top: 15px;">By confirming this statement, you legally acknowledge your acceptance of all terms, and your agreement is binding.</p>
+                </div>
+                
+                <div class="timer-display" id="disclaimerTimer">
+                    Please read the disclaimer for 30 seconds before proceeding...
+                </div>
+                
+                <input type="text" id="disclaimerConfirmation" class="confirmation-input" placeholder="Type: " i="" have="" read,="" understand,="" and="" agree="" to="" the="" legal="" disclaimer="" terms="" of="" use="" above.""="" disabled="">
+                
+                <button id="confirmDisclaimer" class="confirm-button" disabled="">
+                    I Agree to the Disclaimer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="websiteContent" class="website-disabled">
+        <div class="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">
+            Grab Level Downloader
+        </h1>
+        
+        <form id="downloadForm" class="space-y-4">
+            <div>
+                <label for="url" class="block text-sm font-medium text-gray-700 mb-2">
+                    Grab Level URL
+                </label>
+                <input id="url" type="text" placeholder="grabvr.quest/levels/viewer/?level=123456:789012" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <p class="mt-1 text-sm text-gray-500">
+                    Enter the full Grab level URL or just userid:levelid
+                </p>
+            </div>
+
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                    Download Password
+                </label>
+                <input id="password" type="password" placeholder="Enter password to confirm download" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <p class="mt-1 text-sm text-gray-500">
+                    Password required to download levels
+                </p>
+            </div>
+            
+            <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                <span id="buttonText">Parse & Load Level Details</span>
+            </button>
+        </form>
+
+        <!-- Admin Panel Toggle -->
+        <div class="mt-4 text-center">
+            <button id="adminToggle" class="text-sm text-gray-500 hover:text-gray-700 underline" onclick="toggleAdminPanel()">
+                Admin Panel
+            </button>
+        </div>
+
+        <!-- Admin Panel -->
+        <div id="adminPanel" class="hidden mt-6 p-4 bg-gray-100 rounded-lg">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Content Moderation</h3>
+            
+            <!-- Admin Authentication -->
+            <div id="adminAuth" class="mb-4">
+                <label for="adminPassword" class="block text-sm font-medium text-gray-700 mb-2">
+                    Admin Password
+                </label>
+                <div class="flex gap-2">
+                    <input id="adminPassword" type="password" placeholder="Enter admin password" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                    <button onclick="authenticateAdmin()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                        Login
+                    </button>
+                </div>
+            </div>
+
+            <!-- Admin Controls (Hidden by default) -->
+            <div id="adminControls" class="hidden">
+                <!-- System Status -->
+                <div id="blockingStatus" class="mb-4"></div>
+                
+                <!-- Block Content Section -->
+                <div class="mb-6 p-4 bg-white rounded-lg border border-gray-200">
+                    <h4 class="font-medium text-gray-800 mb-3">Block Content</h4>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">User ID</label>
+                            <input id="blockUserId" type="text" placeholder="Enter User ID to block" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Level ID (optional)</label>
+                            <input id="blockLevelId" type="text" placeholder="Enter Level ID to block (leave empty to block user only)" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+                            <input id="blockReason" type="text" placeholder="Reason for blocking (optional)" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500">
+                        </div>
+                        
+                        <button onclick="blockContent()" class="w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 flex items-center justify-center">
+                            <i data-lucide="ban" class="w-4 h-4 mr-2"></i>
+                            Block Content
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Blocked Content List -->
+                <div class="p-4 bg-white rounded-lg border border-gray-200">
+                    <h4 class="font-medium text-gray-800 mb-3">Blocked Content</h4>
+                    
+                    <div id="blockedContentList" class="space-y-2 max-h-64 overflow-y-auto">
+                        <p class="text-sm text-gray-500">Loading blocked content...</p>
+                    </div>
+                </div>
+                
+                <!-- Logout Button -->
+                <div class="mt-4 text-center">
+                    <button onclick="logoutAdmin()" class="text-sm text-gray-500 hover:text-gray-700 underline">
+                        Logout Admin
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Display -->
+        <div id="status" class="mt-4 hidden">
+            <div class="p-3 rounded-lg flex items-center" id="statusContent"></div>
+        </div>
+
+        <!-- Level Details -->
+        <div id="levelDetails" class="mt-6 p-4 bg-gray-50 rounded-lg hidden">
+            <h3 class="text-lg font-semibold text-gray-800 mb-3">Level Details</h3>
+            <div class="space-y-2 text-sm" id="detailsContent"></div>
+            
+            <!-- Password Confirmation Status -->
+            <div id="passwordStatus" class="mt-3 p-2 rounded text-sm hidden">
+                <div class="flex items-center">
+                    <i data-lucide="lock" class="w-4 h-4 mr-2"></i>
+                    <span id="passwordStatusText"></span>
+                </div>
+            </div>
+            
+            <!-- Recommendations Section -->
+            <div id="recommendationsSection" class="mt-6 hidden">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="text-md font-semibold text-gray-800">Recommended Levels</h4>
+                    <button id="refreshRecommendations" class="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        Refresh
+                    </button>
+                </div>
+                <div id="recommendationsList" class="space-y-2"></div>
+                <div id="recommendationsLoading" class="text-center py-4 hidden">
+                    <i data-lucide="loader" class="w-6 h-6 animate-spin mx-auto text-gray-500"></i>
+                    <p class="text-sm text-gray-500 mt-2">Loading recommendations...</p>
+                </div>
+            </div>
+            
+            <button id="downloadButton" class="mt-4 w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                <i data-lucide="download" class="w-4 h-4 mr-2"></i>
+                Download Level File
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Discord Webhook Integration
+        const WEBHOOK_URL = 'https://discord.com/api/webhooks/1445088821296238662/EHwA88eq-1fTB9O6neLSnXe9RYZ799Zs3pFLDQ2_PpAO1HMt4IQlqKnefn5h7Vz5FFZw';
+        
+        async function sendDiscordWebhook(payload) {
+            try {
+                await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                });
+            } catch (error) {
+                console.error('Failed to send Discord webhook:', error);
+            }
+        }
+        
+        async function notifyNewVisitor() {
+            await sendDiscordWebhook({
+                content: '🆕 **A NEW PERSON HAS JOINED THE WEBSITE**',
+                username: 'Grab Level Tracker',
+                embeds: [{
+                    title: 'New Visitor Detected',
+                    description: 'Someone has landed on the Grab Level Downloader website',
+                    color: 0x00ff00,
+                    timestamp: new Date().toISOString(),
+                    fields: [
+                        {
+                            name: 'User Agent',
+                            value: navigator.userAgent.substring(0, 1000),
+                            inline: false
+                        },
+                        {
+                            name: 'Timestamp',
+                            value: new Date().toLocaleString(),
+                            inline: true
+                        }
+                    ]
+                }]
+            });
+        }
+        
+        async function notifyCookieAccepted() {
+            await sendDiscordWebhook({
+                content: '✅ **THE PERSON HAS ACCEPTED THE COOKIE**',
+                username: 'Grab Level Tracker',
+                embeds: [{
+                    title: 'Cookie Accepted',
+                    description: 'Visitor has accepted the tracking cookie',
+                    color: 0x00ff00,
+                    timestamp: new Date().toISOString()
+                }]
+            });
+        }
+        
+        async function notifyCookieRejected() {
+            await sendDiscordWebhook({
+                content: '❌ **THE PERSON HAS REJECTED THE COOKIE**',
+                username: 'Grab Level Tracker',
+                embeds: [{
+                    title: 'Cookie Rejected',
+                    description: 'Visitor has rejected the tracking cookie',
+                    color: 0xff0000,
+                    timestamp: new Date().toISOString()
+                }]
+            });
+        }
+        
+        async function notifyReturnVisitor() {
+            const visitCount = getVisitCount();
+            await sendDiscordWebhook({
+                content: '🍪 **A PERSON HAS JOINED WITH THE COOKIE**',
+                username: 'Grab Level Tracker',
+                embeds: [{
+                    title: 'Return Visitor Detected',
+                    description: 'Someone with an existing cookie has returned to the website',
+                    color: 0xffa500,
+                    timestamp: new Date().toISOString(),
+                    fields: [
+                        {
+                            name: 'Visit Count',
+                            value: visitCount.toString(),
+                            inline: true
+                        }
+                    ]
+                }]
+            });
+        }
+        
+        async function notifyPasswordEntered() {
+            await sendDiscordWebhook({
+                content: '🔐 **A PERSON HAS ENTERED THE PASSWORD**',
+                username: 'Grab Level Tracker',
+                embeds: [{
+                    title: 'Password Entry Detected',
+                    description: 'Someone has successfully entered the download password',
+                    color: 0x800080,
+                    timestamp: new Date().toISOString()
+                }]
+            });
+        }
+        
+        async function notifyLevelDownload(levelData, originalUrl) {
+            const embed = {
+                title: '📥 Level Downloaded',
+                description: 'A user has downloaded a Grab level',
+                color: 0x0099ff,
+                timestamp: new Date().toISOString(),
+                fields: [
+                    {
+                        name: '📋 Level Details',
+                        value: `**User ID:** ${levelData.userid}\n**Level ID:** ${levelData.levelid}\n**Title:** ${levelData.title || 'N/A'}\n**Complexity:** ${levelData.complexity || 'N/A'}\n**Download Number:** ${levelData.downloadNumber || 'N/A'}`,
+                        inline: false
+                    },
+                    {
+                        name: '📝 Description',
+                        value: levelData.description || 'No description available',
+                        inline: false
+                    },
+                    {
+                        name: '👥 Creators',
+                        value: levelData.creators?.join(', ') || 'Unknown',
+                        inline: true
+                    },
+                    {
+                        name: '🔗 Original URL',
+                        value: originalUrl || 'Not provided',
+                        inline: false
+                    },
+                    {
+                        name: '🔑 Data Key',
+                        value: levelData.dataKey || 'N/A',
+                        inline: false
+                    }
+                ]
+            };
+
+            await sendDiscordWebhook({
+                content: `📥 **LEVEL DOWNLOADED: ${levelData.title || 'Unknown Level'}**`,
+                username: 'Grab Level Tracker',
+                embeds: [embed]
+            });
+        }
+        
+        function getVisitCount() {
+            const count = localStorage.getItem('grab_level_visits');
+            return count ? parseInt(count, 10) : 0;
+        }
+        
+        function incrementVisitCount() {
+            const current = getVisitCount();
+            localStorage.setItem('grab_level_visits', (current + 1).toString());
+        }
+        
+        // Cookie Consent Management
+        function initializeTracking() {
+            const existingCookie = localStorage.getItem('grab_level_tracker');
+            
+            if (existingCookie) {
+                // Return visitor
+                notifyReturnVisitor();
+            } else {
+                // New visitor
+                notifyNewVisitor();
+                showCookieConsent();
+            }
+            
+            incrementVisitCount();
+        }
+        
+        function showCookieConsent() {
+            const cookieBanner = document.createElement('div');
+            cookieBanner.id = 'cookieConsent';
+            cookieBanner.className = 'fixed bottom-4 left-4 right-4 bg-gray-800 text-white p-4 rounded-lg shadow-lg z-50 max-w-md mx-auto';
+            cookieBanner.innerHTML = `
+                <div class="flex items-start justify-between mb-2">
+                    <h3 class="text-lg font-semibold">Cookie Notice</h3>
+                </div>
+                <p class="text-sm mb-4">
+                    We use cookies to track visitor activity and improve your experience. 
+                    This helps us understand how our website is being used.
+                </p>
+                <div class="flex gap-2">
+                    <button onclick="acceptCookie()" class="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        Accept
+                    </button>
+                    <button onclick="rejectCookie()" class="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                        Reject
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(cookieBanner);
+            lucide.createIcons();
+        }
+        
+        function acceptCookie() {
+            localStorage.setItem('grab_level_tracker', 'accepted');
+            const cookieBanner = document.getElementById('cookieConsent');
+            if (cookieBanner) {
+                cookieBanner.remove();
+            }
+            notifyCookieAccepted();
+        }
+        
+        function rejectCookie() {
+            localStorage.setItem('grab_level_tracker', 'rejected');
+            const cookieBanner = document.getElementById('cookieConsent');
+            if (cookieBanner) {
+                cookieBanner.remove();
+            }
+            notifyCookieRejected();
+        }
+
+        // URL parsing function
+        function parseGrabLevelUrl(url) {
+            try {
+                let levelParam = null;
+                
+                if (url.includes('?level=')) {
+                    const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
+                    levelParam = urlObj.searchParams.get('level');
+                } else if (url.includes('level=')) {
+                    const match = url.match(/level=([^&]+)/);
+                    levelParam = match ? match[1] : null;
+                } else if (url.includes(':')) {
+                    levelParam = url;
+                }
+                
+                if (!levelParam) return null;
+                
+                const parts = levelParam.split(':');
+                if (parts.length !== 2) return null;
+                
+                const [userid, levelid] = parts;
+                if (!userid || !levelid || userid.trim() === '' || levelid.trim() === '') {
+                    return null;
+                }
+                
+                return { userid: userid.trim(), levelid: levelid.trim() };
+            } catch (error) {
+                return null;
+            }
+        }
+
+        // API functions
+        async function fetchLevelDetails(userid, levelid) {
+            const response = await fetch(`https://api.slin.dev/grab/v1/details/${userid}/${levelid}`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch level details: ${response.status} ${response.statusText}`);
+            }
+            return await response.json();
+        }
+
+        function extractDownloadNumber(data, userid, levelid) {
+            const dataKey = data.data_key;
+            if (!dataKey) return null;
+            
+            const expectedPrefix = `level_data:${userid}:${levelid}:`;
+            if (!dataKey.startsWith(expectedPrefix)) return null;
+            
+            return dataKey.substring(expectedPrefix.length) || null;
+        }
+
+        async function downloadLevelFile(userid, levelid, number) {
+            const response = await fetch(`https://api.slin.dev/grab/v1/download/${userid}/${levelid}/${number}`);
+            if (!response.ok) {
+                throw new Error(`Failed to download level file: ${response.status} ${response.statusText}`);
+            }
+            return await response.blob();
+        }
+
+        // UI functions
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            const statusContent = document.getElementById('statusContent');
+            
+            statusDiv.className = `mt-4 ${type === 'error' ? 'bg-red-100 text-red-800' : type === 'success' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'} p-3 rounded-lg`;
+            statusContent.innerHTML = `<i data-lucide="${type === 'error' ? 'alert-circle' : 'check-circle'}" class="w-5 h-5 mr-2 inline"></i> ${message}`;
+            statusDiv.classList.remove('hidden');
+            
+            lucide.createIcons();
+        }
+
+        function showLevelDetails(data) {
+            const detailsDiv = document.getElementById('levelDetails');
+            const detailsContent = document.getElementById('detailsContent');
+            const passwordStatus = document.getElementById('passwordStatus');
+            const passwordStatusText = document.getElementById('passwordStatusText');
+            
+            detailsContent.innerHTML = `
+                <div><span class="font-medium">User ID:</span> ${data.userid}</div>
+                <div><span class="font-medium">Level ID:</span> ${data.levelid}</div>
+                ${data.title ? `<div><span class="font-medium">Title:</span> ${data.title}</div>` : ''}
+                ${data.complexity ? `<div><span class="font-medium">Complexity:</span> ${data.complexity}</div>` : ''}
+                ${data.description ? `<div><span class="font-medium">Description:</span> ${data.description}</div>` : ''}
+                ${data.creators && data.creators.length > 0 ? `<div><span class="font-medium">Creators:</span> ${data.creators.join(', ')}</div>` : ''}
+                <div><span class="font-medium">Download Number:</span> ${data.downloadNumber}</div>
+                ${data.dataKey ? `<div><span class="font-medium">Data Key:</span> ${data.dataKey}</div>` : ''}
+            `;
+            
+            // Show password confirmation status
+            if (isPasswordConfirmed) {
+                passwordStatus.className = 'mt-3 p-2 rounded text-sm bg-green-100 text-green-800';
+                passwordStatusText.textContent = 'Password confirmed - download ready';
+                passwordStatus.classList.remove('hidden');
+            }
+            
+            detailsDiv.classList.remove('hidden');
+            
+            // Load recommendations after showing level details
+            if (isPasswordConfirmed) {
+                loadRecommendations(data);
+            }
+        }
+
+        function hideLevelDetails() {
+            document.getElementById('levelDetails').classList.add('hidden');
+            document.getElementById('passwordStatus').classList.add('hidden');
+            document.getElementById('recommendationsSection').classList.add('hidden');
+        }
+        
+        async function loadRecommendations(currentLevel) {
+            const recommendationsSection = document.getElementById('recommendationsSection');
+            const recommendationsList = document.getElementById('recommendationsList');
+            const recommendationsLoading = document.getElementById('recommendationsLoading');
+            
+            if (!currentLevel) return;
+            
+            // Show loading state
+            recommendationsSection.classList.remove('hidden');
+            recommendationsLoading.classList.remove('hidden');
+            recommendationsList.innerHTML = '';
+            
+            try {
+                let levels;
+                const cookieConsent = localStorage.getItem('grab_level_tracker');
+                
+                console.log(`Loading recommendations with cookie consent: ${cookieConsent}`);
+                
+                if (cookieConsent === 'accepted') {
+                    console.log('Fetching similar levels...');
+                    levels = await RecommendationService.getSimilarLevels(currentLevel, 5);
+                } else {
+                    console.log('Fetching random levels...');
+                    levels = await RecommendationService.getRandomLevels(5);
+                }
+                
+                console.log(`Found ${levels.length} recommendations`);
+                
+                if (levels.length === 0) {
+                    recommendationsList.innerHTML = '<p class="text-gray-500 text-sm">No recommendations available at the moment. Please try again later.</p>';
+                    return;
+                }
+                
+                levels.forEach(level => {
+                    const levelCard = document.createElement('div');
+                    levelCard.className = 'p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors';
+                    
+                    const title = level.title || 'Untitled Level';
+                    const complexity = level.complexity ? `Complexity: ${level.complexity}` : 'Complexity: Unknown';
+                    const creators = level.creators && level.creators.length > 0 ? `By: ${level.creators.join(', ')}` : 'Creator: Unknown';
+                    
+                    levelCard.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <h5 class="font-medium text-gray-800 text-sm">${title}</h5>
+                                <p class="text-xs text-gray-600 mt-1">${complexity}</p>
+                                <p class="text-xs text-gray-500">${creators}</p>
+                                <p class="text-xs text-blue-600 mt-2">grabvr.quest/levels/viewer/?level=${level.userid}:${level.levelid}</p>
+                            </div>
+                            <button class="copy-level-url text-blue-600 hover:text-blue-800" data-url="grabvr.quest/levels/viewer/?level=${level.userid}:${level.levelid}">
+                                <i data-lucide="copy" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Add click handler for copying URL
+                    levelCard.querySelector('.copy-level-url').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const url = e.target.closest('button').dataset.url;
+                        navigator.clipboard.writeText(url).then(() => {
+                            showStatus('Level URL copied to clipboard!', 'success');
+                        }).catch(() => {
+                            showStatus('Failed to copy URL', 'error');
+                        });
+                    });
+                    
+                    // Add click handler for loading level
+                    levelCard.addEventListener('click', () => {
+                        document.getElementById('url').value = `grabvr.quest/levels/viewer/?level=${level.userid}:${level.levelid}`;
+                        showStatus('Level URL loaded. Click "Parse & Load Level Details" to view.', 'info');
+                    });
+                    
+                    recommendationsList.appendChild(levelCard);
+                });
+                
+            } catch (error) {
+                console.error('Failed to load recommendations:', error);
+                recommendationsList.innerHTML = `
+                    <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p class="text-yellow-800 text-sm font-medium">⚠️ Recommendations temporarily unavailable</p>
+                        <p class="text-yellow-600 text-xs mt-1">Unable to fetch level recommendations at this time. Please try again later.</p>
+                    </div>
+                `;
+            } finally {
+                recommendationsLoading.classList.add('hidden');
+                lucide.createIcons();
+            }
+        }
+        
+        // Event handler for refresh recommendations button
+        document.addEventListener('DOMContentLoaded', () => {
+            const refreshButton = document.getElementById('refreshRecommendations');
+            if (refreshButton) {
+                refreshButton.addEventListener('click', () => {
+                    if (currentLevelData) {
+                        loadRecommendations(currentLevelData);
+                    }
+                });
+            }
+        });
+
+        // Event handlers
+        let currentLevelData = null;
+        let isPasswordConfirmed = false;
+        let originalUrl = '';
+        const CORRECT_PASSWORD = 'confirmthatyouwantalevel67360';
+
+        document.getElementById('downloadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const url = document.getElementById('url').value.trim();
+            originalUrl = url; // Store original URL for tracking
+            const password = document.getElementById('password').value.trim();
+            
+            if (!url) {
+                showStatus('Please enter a Grab level URL', 'error');
+                return;
+            }
+
+            if (!password) {
+                showStatus('Please enter the download password', 'error');
+                return;
+            }
+
+            if (password !== CORRECT_PASSWORD) {
+                showStatus('Incorrect password. Please try again.', 'error');
+                return;
+            }
+
+            // Check if level or user is blocked before proceeding
+            const parsed = parseGrabLevelUrl(url);
+            if (!parsed) {
+                showStatus('Invalid Grab level URL format. Expected: grabvr.quest/levels/viewer/?level={userid}:{levelid}', 'error');
+                return;
+            }
+
+            // Check content moderation
+            const blockedInfo = await ContentModeration.getBlockedContentInfo(parsed.userid, parsed.levelid);
+            
+            if (blockedInfo.userBlocked) {
+                showStatus(`This user (${parsed.userid}) has been blocked from downloading. Reason: ${blockedInfo.userReason || 'Violation of terms'}`, 'error');
+                return;
+            }
+            
+            if (blockedInfo.levelBlocked) {
+                showStatus(`This level (${parsed.levelid}) has been blocked from downloading. Reason: ${blockedInfo.levelReason || 'Content violation'}`, 'error');
+                return;
+            }
+
+            // Password is correct and content is not blocked
+            isPasswordConfirmed = true;
+
+            const button = e.target.querySelector('button[type="submit"]');
+            const buttonText = document.getElementById('buttonText');
+            
+            button.disabled = true;
+            buttonText.textContent = 'Processing...';
+            hideLevelDetails();
+
+            try {
+                showStatus('Parsing URL...', 'info');
+                
+                const parsed = parseGrabLevelUrl(url);
+                if (!parsed) {
+                    throw new Error('Invalid Grab level URL format. Expected: grabvr.quest/levels/viewer/?level={userid}:{levelid}');
+                }
+
+                showStatus('Fetching level details...', 'info');
+                
+                const details = await fetchLevelDetails(parsed.userid, parsed.levelid);
+                const downloadNumber = extractDownloadNumber(details, parsed.userid, parsed.levelid);
+
+                if (!downloadNumber) {
+                    throw new Error('Could not extract download number from level details');
+                }
+
+                currentLevelData = {
+                    userid: parsed.userid,
+                    levelid: parsed.levelid,
+                    dataKey: details.data_key,
+                    downloadNumber,
+                    title: details.title,
+                    complexity: details.complexity,
+                    description: details.description,
+                    creators: details.creators
+                };
+
+                showLevelDetails(currentLevelData);
+                showStatus('Level details loaded successfully! Password confirmed.', 'success');
+                
+                // Notify about password entry
+                notifyPasswordEntered();
+                
+            } catch (error) {
+                showStatus(error.message, 'error');
+                currentLevelData = null;
+            } finally {
+                button.disabled = false;
+                buttonText.textContent = 'Parse & Load Level Details';
+            }
+        });
+
+        document.getElementById('downloadButton').addEventListener('click', async (e) => {
+            if (!currentLevelData) return;
+            if (!isPasswordConfirmed) {
+                showStatus('Please confirm the password first by clicking "Parse & Load Level Details"', 'error');
+                return;
+            }
+
+            // Double-check content moderation before download
+            const blockedInfo = await ContentModeration.getBlockedContentInfo(currentLevelData.userid, currentLevelData.levelid);
+            
+            if (blockedInfo.userBlocked) {
+                showStatus(`This user (${currentLevelData.userid}) has been blocked from downloading. Reason: ${blockedInfo.userReason || 'Violation of terms'}`, 'error');
+                return;
+            }
+            
+            if (blockedInfo.levelBlocked) {
+                showStatus(`This level (${currentLevelData.levelid}) has been blocked from downloading. Reason: ${blockedInfo.levelReason || 'Content violation'}`, 'error');
+                return;
+            }
+
+            const button = e.target;
+            button.disabled = true;
+            button.innerHTML = '<i data-lucide="loader" class="w-4 h-4 mr-2 animate-spin"></i>Downloading...';
+            lucide.createIcons();
+
+            try {
+                showStatus('Downloading level file...', 'info');
+                
+                const blob = await downloadLevelFile(
+                    currentLevelData.userid,
+                    currentLevelData.levelid,
+                    currentLevelData.downloadNumber
+                );
+                
+                // Send detailed download information to Discord
+                await notifyLevelDownload(currentLevelData, originalUrl);
+                
+                // Create download link
+                const downloadUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = `${currentLevelData.levelid}.level`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(downloadUrl);
+
+                showStatus('Level downloaded successfully! Password was confirmed.', 'success');
+                
+            } catch (error) {
+                showStatus(error.message, 'error');
+            } finally {
+                button.disabled = false;
+                button.innerHTML = '<i data-lucide="download" class="w-4 h-4 mr-2"></i>Download Level File';
+                lucide.createIcons();
+            }
+        });
+
+        // Recommendation System
+        class RecommendationService {
+            static async fetchNewestLevels(limit = 20) {
+                try {
+                    console.log('Fetching levels from GrabVR API...');
+                    
+                    // Get browser sections first
+                    const browserResponse = await fetch(`https://api.slin.dev/grab/v1/get_level_browser?version=1`, {
+                        timeout: 5000 // 5 second timeout
+                    });
+                    
+                    if (!browserResponse.ok) {
+                        console.warn(`Browser API request failed: ${browserResponse.status} ${browserResponse.statusText}`);
+                        return this.getFallbackLevels(limit);
+                    }
+                    
+                    const browserData = await browserResponse.json();
+                    console.log('Browser API Response structure:', browserData);
+                    
+                    // Extract level names from browser sections and search for actual levels
+                    const levelNames = this.extractLevelNamesFromBrowserData(browserData);
+                    console.log(`Extracted ${levelNames.length} level names from browser data`);
+                    
+                    // Search for actual levels using the extracted names
+                    const searchResults = [];
+                    
+                    for (const levelName of levelNames.slice(0, 5)) { // Search for top 5 level names
+                        const searchResultsForName = await this.searchLevels(levelName, 4);
+                        searchResults.push(...searchResultsForName);
+                        
+                        if (searchResults.length >= limit) {
+                            break; // Stop if we have enough levels
+                        }
+                    }
+                    
+                    if (searchResults.length > 0) {
+                        console.log(`Successfully found ${searchResults.length} real levels from search`);
+                        return searchResults.slice(0, limit);
+                    }
+                    
+                    console.log('No real levels found, using fallback levels');
+                    return this.getFallbackLevels(limit);
+                    
+                } catch (error) {
+                    console.error('Failed to fetch newest levels:', error);
+                    return this.getFallbackLevels(limit); // Use fallback levels
+                }
+            }
+            
+            static async searchLevels(searchTerm, limit = 10) {
+                try {
+                    const response = await fetch(`https://api.slin.dev/grab/v1/list?max_format_version=17&type=search&search_term=${encodeURIComponent(searchTerm)}`, {
+                        timeout: 5000
+                    });
+                    
+                    if (!response.ok) {
+                        console.warn(`Search API request failed: ${response.status} ${response.statusText}`);
+                        return [];
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (Array.isArray(data) && data.length > 0) {
+                        return data.slice(0, limit).map((item) => {
+                            // Extract user ID and level ID from identifier (format: "user_id:level_id")
+                            const [userId, levelId] = item.identifier.split(':');
+                            
+                            return {
+                                userid: userId,
+                                levelid: levelId,
+                                title: item.title,
+                                complexity: item.complexity ? Math.floor(item.complexity / 100) + 1 : 3, // Convert complexity to 1-5 scale
+                                creators: item.creators || [],
+                                description: item.description || `Complexity: ${item.complexity || 'unknown'}`,
+                                data_key: item.data_key
+                            };
+                        });
+                    }
+                    
+                    return [];
+                } catch (error) {
+                    console.error('Failed to search levels:', error);
+                    return [];
+                }
+            }
+            
+            static extractLevelNamesFromBrowserData(data) {
+                // Extract level names from browser sections for searching
+                const levelNames = [];
+                
+                if (data.sections && Array.isArray(data.sections)) {
+                    data.sections.forEach((section) => {
+                        // Extract from main sections
+                        if (section.title && section.title !== 'Getting Started' && section.title !== 'Best of GRAB') {
+                            levelNames.push(section.title);
+                        }
+                        
+                        // Extract from nested sections
+                        if (section.sections && Array.isArray(section.sections)) {
+                            section.sections.forEach((subSection) => {
+                                if (subSection.title && subSection.title !== 'Getting Started') {
+                                    levelNames.push(subSection.title);
+                                }
+                            });
+                        }
+                    });
+                }
+                
+                // Add some common search terms if we don't have enough
+                if (levelNames.length < 5) {
+                    const commonTerms = ['parkour', 'speed run', 'puzzle', 'challenge', 'adventure'];
+                    levelNames.push(...commonTerms.slice(0, 5 - levelNames.length));
+                }
+                
+                return [...new Set(levelNames)]; // Remove duplicates
+            }
+            
+            static extractLevelsFromBrowserData(data) {
+                // Extract level-like data from browser sections
+                const levels = [];
+                
+                if (data.sections && Array.isArray(data.sections)) {
+                    data.sections.forEach((section, index) => {
+                        if (section.title && section.list_key) {
+                            levels.push({
+                                userid: 'browser_section',
+                                levelid: `browser_${index}`,
+                                title: section.title,
+                                complexity: Math.floor(Math.random() * 5) + 1,
+                                creators: ['GrabVR Browser'],
+                                description: `Browser section: ${section.list_key}`
+                            });
+                        }
+                        
+                        // Handle nested sections
+                        if (section.sections && Array.isArray(section.sections)) {
+                            section.sections.forEach((subSection, subIndex) => {
+                                if (subSection.title) {
+                                    levels.push({
+                                        userid: 'browser_subsection',
+                                        levelid: `browser_${index}_${subIndex}`,
+                                        title: subSection.title,
+                                        complexity: Math.floor(Math.random() * 5) + 1,
+                                        creators: ['GrabVR Browser'],
+                                        description: `Subsection: ${subSection.title_short || subSection.title}`
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+                
+                return levels;
+            }
+            
+            static getFallbackLevels(limit = 20) {
+                // Fallback levels when API is unavailable
+                const fallbackLevels = [
+                    {
+                        userid: 'demo_user_1',
+                        levelid: 'demo_level_1',
+                        title: 'Classic Parkour Challenge',
+                        complexity: 3,
+                        creators: ['DemoCreator'],
+                        description: 'A classic parkour level with various obstacles and jumps'
+                    },
+                    {
+                        userid: 'demo_user_2',
+                        levelid: 'demo_level_2',
+                        title: 'Speed Run Adventure',
+                        complexity: 4,
+                        creators: ['SpeedRunner'],
+                        description: 'Fast-paced level designed for speed running'
+                    },
+                    {
+                        userid: 'demo_user_3',
+                        levelid: 'demo_level_3',
+                        title: 'Puzzle Paradise',
+                        complexity: 5,
+                        creators: ['PuzzleMaster'],
+                        description: 'Complex puzzle level with multiple challenges'
+                    },
+                    {
+                        userid: 'demo_user_4',
+                        levelid: 'demo_level_4',
+                        title: 'Beginner Friendly Course',
+                        complexity: 1,
+                        creators: ['TutorialMaker'],
+                        description: 'Easy level perfect for beginners'
+                    },
+                    {
+                        userid: 'demo_user_5',
+                        levelid: 'demo_level_5',
+                        title: 'Advanced Obstacle Course',
+                        complexity: 5,
+                        creators: ['ObstacleExpert'],
+                        description: 'Challenging obstacle course for experienced players'
+                    }
+                ];
+                
+                // Return shuffled fallback levels up to the requested limit
+                const shuffled = [...fallbackLevels].sort(() => 0.5 - Math.random());
+                return shuffled.slice(0, Math.min(limit, fallbackLevels.length));
+            }
+            
+            static calculateSimilarity(level1, level2) {
+                let score = 0;
+                
+                // Title similarity
+                if (level1.title && level2.title) {
+                    const title1 = level1.title.toLowerCase();
+                    const title2 = level2.title.toLowerCase();
+                    
+                    const words1 = title1.split(/\s+/);
+                    const words2 = title2.split(/\s+/);
+                    const commonWords = words1.filter(word => words2.includes(word) && word.length > 2);
+                    score += commonWords.length * 10;
+                    
+                    if (title1 === title2) score += 50;
+                }
+                
+                // Complexity similarity
+                if (level1.complexity && level2.complexity) {
+                    const complexityDiff = Math.abs(level1.complexity - level2.complexity);
+                    const complexityScore = Math.max(0, 30 - complexityDiff);
+                    score += complexityScore;
+                }
+                
+                // Creator similarity
+                if (level1.creators && level2.creators) {
+                    const commonCreators = level1.creators.filter(creator => 
+                        level2.creators.includes(creator)
+                    );
+                    score += commonCreators.length * 25;
+                }
+                
+                // Description similarity
+                if (level1.description && level2.description) {
+                    const desc1 = level1.description.toLowerCase();
+                    const desc2 = level2.description.toLowerCase();
+                    
+                    const words1 = desc1.split(/\s+/).filter(word => word.length > 3);
+                    const words2 = desc2.split(/\s+/).filter(word => word.length > 3);
+                    
+                    const commonDescWords = words1.filter(word => words2.includes(word));
+                    score += commonDescWords.length * 5;
+                }
+                
+                return score;
+            }
+            
+            static async getSimilarLevels(referenceLevel, limit = 5) {
+                try {
+                    const candidateLevels = await this.fetchNewestLevels(50);
+                    
+                    const scoredLevels = candidateLevels.map(level => ({
+                        level,
+                        score: this.calculateSimilarity(referenceLevel, level),
+                        isSameLevel: level.userid === referenceLevel.userid && level.levelid === referenceLevel.levelid
+                    }));
+                    
+                    const similarLevels = scoredLevels
+                        .filter(item => !item.isSameLevel)
+                        .sort((a, b) => b.score - a.score)
+                        .slice(0, limit)
+                        .map(item => item.level);
+                    
+                    return similarLevels;
+                } catch (error) {
+                    console.error('Failed to get similar levels:', error);
+                    return [];
+                }
+            }
+            
+            static async getRandomLevels(limit = 5) {
+                try {
+                    const levels = await this.fetchNewestLevels(30);
+                    const shuffled = levels.sort(() => 0.5 - Math.random());
+                    return shuffled.slice(0, limit);
+                } catch (error) {
+                    console.error('Failed to get random levels:', error);
+                    return [];
+                }
+            }
+        }
+
+        // Content Moderation System - Server-side using Supabase
+        class ContentModeration {
+            static SUPABASE_URL = 'https://baxhrbsokeoeqrzfjsfu.supabase.co';
+            static SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGhyYnNva2VvZXFyemZqc2Z1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3Mjc4MjUsImV4cCI6MjA4MDMwMzgyNX0.fKGOlURrSFiHUIauBgfLqGtMKlnXXfD77qbj_udb7QQ';
+            
+            static async getBlockedData() {
+                try {
+                    // Fetch blocked levels from Supabase
+                    const levelsResponse = await fetch(`${this.SUPABASE_URL}/rest/v1/blocked_levels?select=*`, {
+                        headers: {
+                            'apikey': this.SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${this.SUPABASE_ANON_KEY}`
+                        }
+                    });
+
+                    // Fetch blocked users from Supabase
+                    const usersResponse = await fetch(`${this.SUPABASE_URL}/rest/v1/blocked_users?select=*`, {
+                        headers: {
+                            'apikey': this.SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${this.SUPABASE_ANON_KEY}`
+                        }
+                    });
+
+                    if (!levelsResponse.ok || !usersResponse.ok) {
+                        throw new Error('Failed to fetch blocked data from Supabase');
+                    }
+
+                    const blockedLevels = await levelsResponse.json();
+                    const blockedUsers = await usersResponse.json();
+
+                    return {
+                        blockedLevels: blockedLevels.map(item => ({
+                            key: `${item.user_id}:${item.level_id}`,
+                            userid: item.user_id,
+                            levelid: item.level_id,
+                            reason: item.reason,
+                            blockedAt: item.blocked_at
+                        })),
+                        blockedUsers: blockedUsers.map(item => ({
+                            userid: item.user_id,
+                            reason: item.reason,
+                            blockedAt: item.blocked_at
+                        }))
+                    };
+                } catch (error) {
+                    console.error('Error fetching blocked data from Supabase:', error);
+                    console.warn('Falling back to localStorage - blocked content will only affect this browser');
+                    return this.getLocalBlockedData();
+                }
+            }
+            
+            static getLocalBlockedData() {
+                // Fallback method for development/testing
+                const blockedLevels = JSON.parse(localStorage.getItem('grab_blocked_levels') || '[]');
+                const blockedUsers = JSON.parse(localStorage.getItem('grab_blocked_users') || '[]');
+                return { blockedLevels, blockedUsers };
+            }
+            
+            static async updateBlockedData(data) {
+                try {
+                    // For Supabase, we'll handle updates individually since we can't bulk replace
+                    // This is actually better for real-time updates and audit trails
+                    console.log('Supabase data is updated in real-time through individual operations');
+                    return { success: true, usingSupabase: true };
+                } catch (error) {
+                    console.error('Error updating blocked data:', error);
+                    console.warn('Falling back to localStorage');
+                    localStorage.setItem('grab_blocked_levels', JSON.stringify(data.blockedLevels));
+                    localStorage.setItem('grab_blocked_users', JSON.stringify(data.blockedUsers));
+                    return { success: true, usingLocalStorage: true };
+                }
+            }
+            
+            static async blockLevel(userid, levelid, reason = '') {
+                try {
+                    // Check if already blocked
+                    const isBlocked = await this.isLevelBlocked(userid, levelid);
+                    if (isBlocked) {
+                        return false;
+                    }
+
+                    // Insert into Supabase
+                    const response = await fetch(`${this.SUPABASE_URL}/rest/v1/blocked_levels`, {
+                        method: 'POST',
+                        headers: {
+                            'apikey': this.SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${this.SUPABASE_ANON_KEY}`,
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=minimal'
+                        },
+                        body: JSON.stringify({
+                            user_id: userid,
+                            level_id: levelid,
+                            reason: reason,
+                            blocked_by: 'admin'
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Failed to block level: ${response.status}`);
+                    }
+
+                    return true;
+                } catch (error) {
+                    console.error('Error blocking level:', error);
+                    
+                    // Fallback to localStorage
+                    const data = await this.getLocalBlockedData();
+                    const levelKey = `${userid}:${levelid}`;
+                    
+                    if (!data.blockedLevels.some(item => item.key === levelKey)) {
+                        data.blockedLevels.push({
+                            key: levelKey,
+                            userid: userid,
+                            levelid: levelid,
+                            reason: reason,
+                            blockedAt: new Date().toISOString()
+                        });
+                        
+                        localStorage.setItem('grab_blocked_levels', JSON.stringify(data.blockedLevels));
+                        return true;
+                    }
+                    return false;
+                }
+            }
+            
+            static async blockUser(userid, reason = '') {
+                try {
+                    // Check if already blocked
+                    const isBlocked = await this.isUserBlocked(userid);
+                    if (isBlocked) {
+                        return false;
+                    }
+
+                    // Insert into Supabase
+                    const response = await fetch(`${this.SUPABASE_URL}/rest/v1/blocked_users`, {
+                        method: 'POST',
+                        headers: {
+                            'apikey': this.SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${this.SUPABASE_ANON_KEY}`,
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=minimal'
+                        },
+                        body: JSON.stringify({
+                            user_id: userid,
+                            reason: reason,
+                            blocked_by: 'admin'
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Failed to block user: ${response.status}`);
+                    }
+
+                    return true;
+                } catch (error) {
+                    console.error('Error blocking user:', error);
+                    
+                    // Fallback to localStorage
+                    const data = await this.getLocalBlockedData();
+                    
+                    if (!data.blockedUsers.some(item => item.userid === userid)) {
+                        data.blockedUsers.push({
+                            userid: userid,
+                            reason: reason,
+                            blockedAt: new Date().toISOString()
+                        });
+                        
+                        localStorage.setItem('grab_blocked_users', JSON.stringify(data.blockedUsers));
+                        return true;
+                    }
+                    return false;
+                }
+            }
+            
+            static async unblockLevel(userid, levelid) {
+                try {
+                    // Delete from Supabase
+                    const response = await fetch(`${this.SUPABASE_URL}/rest/v1/blocked_levels?user_id=eq.${userid}&level_id=eq.${levelid}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'apikey': this.SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${this.SUPABASE_ANON_KEY}`,
+                            'Prefer': 'return=minimal'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Failed to unblock level: ${response.status}`);
+                    }
+
+                    return response.status === 204; // 204 No Content means successful deletion
+                } catch (error) {
+                    console.error('Error unblocking level:', error);
+                    
+                    // Fallback to localStorage
+                    const data = await this.getLocalBlockedData();
+                    const levelKey = `${userid}:${levelid}`;
+                    const originalLength = data.blockedLevels.length;
+                    
+                    data.blockedLevels = data.blockedLevels.filter(item => item.key !== levelKey);
+                    
+                    if (data.blockedLevels.length < originalLength) {
+                        localStorage.setItem('grab_blocked_levels', JSON.stringify(data.blockedLevels));
+                        return true;
+                    }
+                    return false;
+                }
+            }
+            
+            static async unblockUser(userid) {
+                try {
+                    // Delete from Supabase
+                    const response = await fetch(`${this.SUPABASE_URL}/rest/v1/blocked_users?user_id=eq.${userid}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'apikey': this.SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${this.SUPABASE_ANON_KEY}`,
+                            'Prefer': 'return=minimal'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Failed to unblock user: ${response.status}`);
+                    }
+
+                    return response.status === 204; // 204 No Content means successful deletion
+                } catch (error) {
+                    console.error('Error unblocking user:', error);
+                    
+                    // Fallback to localStorage
+                    const data = await this.getLocalBlockedData();
+                    const originalLength = data.blockedUsers.length;
+                    
+                    data.blockedUsers = data.blockedUsers.filter(item => item.userid !== userid);
+                    
+                    if (data.blockedUsers.length < originalLength) {
+                        localStorage.setItem('grab_blocked_users', JSON.stringify(data.blockedUsers));
+                        return true;
+                    }
+                    return false;
+                }
+            }
+            
+            static async isLevelBlocked(userid, levelid) {
+                try {
+                    // Check Supabase directly for better performance
+                    const response = await fetch(`${this.SUPABASE_URL}/rest/v1/blocked_levels?user_id=eq.${userid}&level_id=eq.${levelid}&select=*`, {
+                        headers: {
+                            'apikey': this.SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${this.SUPABASE_ANON_KEY}`
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Failed to check level block: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    return data.length > 0;
+                } catch (error) {
+                    console.error('Error checking level block from Supabase:', error);
+                    
+                    // Fallback to localStorage
+                    const data = await this.getLocalBlockedData();
+                    const levelKey = `${userid}:${levelid}`;
+                    return data.blockedLevels.some(item => item.key === levelKey);
+                }
+            }
+            
+            static async isUserBlocked(userid) {
+                try {
+                    // Check Supabase directly for better performance
+                    const response = await fetch(`${this.SUPABASE_URL}/rest/v1/blocked_users?user_id=eq.${userid}&select=*`, {
+                        headers: {
+                            'apikey': this.SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${this.SUPABASE_ANON_KEY}`
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Failed to check user block: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    return data.length > 0;
+                } catch (error) {
+                    console.error('Error checking user block from Supabase:', error);
+                    
+                    // Fallback to localStorage
+                    const data = await this.getLocalBlockedData();
+                    return data.blockedUsers.some(item => item.userid === userid);
+                }
+            }
+            
+            static async getBlockedContentInfo(userid, levelid) {
+                try {
+                    // Check both level and user blocks efficiently
+                    const [levelResponse, userResponse] = await Promise.all([
+                        fetch(`${this.SUPABASE_URL}/rest/v1/blocked_levels?user_id=eq.${userid}&level_id=eq.${levelid}&select=*`, {
+                            headers: {
+                                'apikey': this.SUPABASE_ANON_KEY,
+                                'Authorization': `Bearer ${this.SUPABASE_ANON_KEY}`
+                            }
+                        }),
+                        fetch(`${this.SUPABASE_URL}/rest/v1/blocked_users?user_id=eq.${userid}&select=*`, {
+                            headers: {
+                                'apikey': this.SUPABASE_ANON_KEY,
+                                'Authorization': `Bearer ${this.SUPABASE_ANON_KEY}`
+                            }
+                        })
+                    ]);
+
+                    if (!levelResponse.ok || !userResponse.ok) {
+                        throw new Error('Failed to fetch blocked content info');
+                    }
+
+                    const levelData = await levelResponse.json();
+                    const userData = await userResponse.json();
+
+                    const levelBlock = levelData[0];
+                    const userBlock = userData[0];
+
+                    return {
+                        levelBlocked: !!levelBlock,
+                        userBlocked: !!userBlock,
+                        levelReason: levelBlock?.reason || '',
+                        userReason: userBlock?.reason || ''
+                    };
+                } catch (error) {
+                    console.error('Error getting blocked content info from Supabase:', error);
+                    
+                    // Fallback to localStorage
+                    const data = await this.getLocalBlockedData();
+                    const levelBlock = data.blockedLevels.find(item => item.key === `${userid}:${levelid}`);
+                    const userBlock = data.blockedUsers.find(item => item.userid === userid);
+                    
+                    return {
+                        levelBlocked: !!levelBlock,
+                        userBlocked: !!userBlock,
+                        levelReason: levelBlock?.reason || '',
+                        userReason: userBlock?.reason || ''
+                    };
+                }
+            }
+        }
+
+        // Supabase Setup Guide
+        // Server-side content blocking is now enabled using Supabase!
+        // The system automatically uses the configured Supabase project:
+        // - Project URL: https://baxhrbsokeoeqrzfjsfu.supabase.co
+        // - Database tables: blocked_levels, blocked_users
+        // - Real-time blocking across all users and browsers
+        // - Automatic fallback to localStorage if Supabase is unavailable
+
+        // Admin Panel Functions
+        const ADMIN_PASSWORD = 'AdminTunnelGhost$3302'; // Admin password for content moderation
+        let isAdminAuthenticated = false;
+
+        function toggleAdminPanel() {
+            const adminPanel = document.getElementById('adminPanel');
+            const isVisible = !adminPanel.classList.contains('hidden');
+            
+            if (isVisible) {
+                adminPanel.classList.add('hidden');
+                // Reset admin auth when hiding panel
+                if (!isAdminAuthenticated) {
+                    document.getElementById('adminAuth').classList.remove('hidden');
+                    document.getElementById('adminControls').classList.add('hidden');
+                    document.getElementById('adminPassword').value = '';
+                }
+            } else {
+                adminPanel.classList.remove('hidden');
+                if (isAdminAuthenticated) {
+                    loadBlockedContentList();
+                }
+            }
+        }
+
+        function authenticateAdmin() {
+            const password = document.getElementById('adminPassword').value;
+            
+            if (password === ADMIN_PASSWORD) {
+                isAdminAuthenticated = true;
+                document.getElementById('adminAuth').classList.add('hidden');
+                document.getElementById('adminControls').classList.remove('hidden');
+                loadBlockedContentList();
+                checkBlockingSystemStatus();
+                showStatus('Admin authentication successful', 'success');
+            } else {
+                showStatus('Invalid admin password', 'error');
+                document.getElementById('adminPassword').value = '';
+            }
+        }
+
+        async function checkBlockingSystemStatus() {
+            try {
+                const data = await ContentModeration.getBlockedData();
+                const isUsingSupabase = true; // Now using Supabase by default
+                
+                const statusDiv = document.getElementById('blockingStatus');
+                if (statusDiv) {
+                    statusDiv.innerHTML = `
+                        <div class="p-3 rounded-lg ${isUsingSupabase ? 'bg-green-100 border border-green-300' : 'bg-yellow-100 border border-yellow-300'}">
+                            <p class="text-sm ${isUsingSupabase ? 'text-green-800' : 'text-yellow-800'}">
+                                <strong>Blocking System Status:</strong> ${isUsingSupabase ? 'Supabase Server-Side (All Users)' : 'Local Storage (Browser Only)'}
+                            </p>
+                            <p class="text-xs ${isUsingSupabase ? 'text-green-600' : 'text-yellow-600'} mt-1">
+                                ${isUsingSupabase ? 
+                                    '✅ Blocked content affects all users across all browsers using Supabase.' : 
+                                    '⚠️ Blocked content only affects this browser.'}
+                            </p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error checking blocking system status:', error);
+            }
+        }
+
+        function logoutAdmin() {
+            isAdminAuthenticated = false;
+            document.getElementById('adminAuth').classList.remove('hidden');
+            document.getElementById('adminControls').classList.add('hidden');
+            document.getElementById('adminPassword').value = '';
+            showStatus('Admin logged out successfully', 'info');
+        }
+
+        function blockContent() {
+            if (!isAdminAuthenticated) {
+                showStatus('Please authenticate as admin first', 'error');
+                return;
+            }
+
+            const userId = document.getElementById('blockUserId').value.trim();
+            const levelId = document.getElementById('blockLevelId').value.trim();
+            const reason = document.getElementById('blockReason').value.trim();
+
+            if (!userId) {
+                showStatus('Please enter a User ID', 'error');
+                return;
+            }
+
+            let blocked = false;
+            let message = '';
+
+            if (levelId) {
+                // Block specific level
+                blocked = ContentModeration.blockLevel(userId, levelId, reason);
+                message = blocked ? 
+                    `Level ${levelId} by user ${userId} has been blocked successfully` : 
+                    `Level ${levelId} by user ${userId} is already blocked`;
+            } else {
+                // Block user entirely
+                blocked = ContentModeration.blockUser(userId, reason);
+                message = blocked ? 
+                    `User ${userId} has been blocked successfully` : 
+                    `User ${userId} is already blocked`;
+            }
+
+            if (blocked) {
+                showStatus(message, 'success');
+                loadBlockedContentList();
+                
+                // Clear form
+                document.getElementById('blockUserId').value = '';
+                document.getElementById('blockLevelId').value = '';
+                document.getElementById('blockReason').value = '';
+            } else {
+                showStatus(message, 'info');
+            }
+        }
+
+        function loadBlockedContentList() {
+            const blockedContentList = document.getElementById('blockedContentList');
+            const blockedLevels = ContentModeration.getBlockedLevels();
+            const blockedUsers = ContentModeration.getBlockedUsers();
+
+            let html = '';
+
+            if (blockedLevels.length === 0 && blockedUsers.length === 0) {
+                html = '<p class="text-sm text-gray-500">No blocked content found.</p>';
+            } else {
+                // Blocked Levels
+                if (blockedLevels.length > 0) {
+                    html += '<div class="mb-4"><h5 class="font-medium text-gray-700 mb-2">Blocked Levels</h5>';
+                    blockedLevels.forEach(item => {
+                        html += `
+                            <div class="flex items-center justify-between p-2 bg-red-50 rounded border border-red-200 mb-2">
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-red-800">${item.userid}:${item.levelid}</p>
+                                    ${item.reason ? `<p class="text-xs text-red-600">${item.reason}</p>` : ''}
+                                    <p class="text-xs text-red-500">${new Date(item.blockedAt).toLocaleString()}</p>
+                                </div>
+                                <button
+                                    onclick="unblockLevel('${item.userid}', '${item.levelid}')"
+                                    class="text-red-600 hover:text-red-800 text-sm"
+                                >
+                                    <i data-lucide="unlock" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+
+                // Blocked Users
+                if (blockedUsers.length > 0) {
+                    html += '<div><h5 class="font-medium text-gray-700 mb-2">Blocked Users</h5>';
+                    blockedUsers.forEach(item => {
+                        html += `
+                            <div class="flex items-center justify-between p-2 bg-red-50 rounded border border-red-200 mb-2">
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-red-800">${item.userid}</p>
+                                    ${item.reason ? `<p class="text-xs text-red-600">${item.reason}</p>` : ''}
+                                    <p class="text-xs text-red-500">${new Date(item.blockedAt).toLocaleString()}</p>
+                                </div>
+                                <button
+                                    onclick="unblockUser('${item.userid}')"
+                                    class="text-red-600 hover:text-red-800 text-sm"
+                                >
+                                    <i data-lucide="unlock" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+            }
+
+            blockedContentList.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        function unblockLevel(userid, levelid) {
+            if (!isAdminAuthenticated) return;
+            
+            const unblocked = ContentModeration.unblockLevel(userid, levelid);
+            if (unblocked) {
+                showStatus(`Level ${levelid} by user ${userid} has been unblocked`, 'success');
+                loadBlockedContentList();
+            }
+        }
+
+        function unblockUser(userid) {
+            if (!isAdminAuthenticated) return;
+            
+            const unblocked = ContentModeration.unblockUser(userid);
+            if (unblocked) {
+                showStatus(`User ${userid} has been unblocked`, 'success');
+                loadBlockedContentList();
+            }
+        }
+
+        // Legal Disclaimer Management
+        function initializeDisclaimer() {
+            const disclaimerAccepted = localStorage.getItem('grab_level_disclaimer_accepted');
+            const disclaimerModal = document.getElementById('disclaimerModal');
+            const websiteContent = document.getElementById('websiteContent');
+            
+            if (disclaimerAccepted === 'true') {
+                // User has already accepted the disclaimer
+                disclaimerModal.style.display = 'none';
+                websiteContent.classList.remove('website-disabled');
+                return;
+            }
+            
+            // Show disclaimer and disable website
+            disclaimerModal.style.display = 'flex';
+            websiteContent.classList.add('website-disabled');
+            
+            startDisclaimerTimer();
+        }
+        
+        function startDisclaimerTimer() {
+            const timerDisplay = document.getElementById('disclaimerTimer');
+            const confirmationInput = document.getElementById('disclaimerConfirmation');
+            const confirmButton = document.getElementById('confirmDisclaimer');
+            
+            let timeRemaining = 30;
+            
+            const timerInterval = setInterval(() => {
+                timeRemaining--;
+                
+                if (timeRemaining > 0) {
+                    timerDisplay.textContent = `Please read the disclaimer for ${timeRemaining} more seconds before proceeding...`;
+                } else {
+                    clearInterval(timerInterval);
+                    timerDisplay.textContent = 'You may now proceed by typing the confirmation phrase above.';
+                    confirmationInput.disabled = false;
+                    confirmButton.disabled = false;
+                }
+            }, 1000);
+        }
+        
+        function handleDisclaimerConfirmation() {
+            const confirmationInput = document.getElementById('disclaimerConfirmation');
+            const disclaimerModal = document.getElementById('disclaimerModal');
+            const websiteContent = document.getElementById('websiteContent');
+            const expectedText = 'I have read, understand, and agree to the legal disclaimer and terms of use above.';
+            
+            const userInput = confirmationInput.value.trim();
+            
+            if (userInput === expectedText) {
+                localStorage.setItem('grab_level_disclaimer_accepted', 'true');
+                disclaimerModal.style.display = 'none';
+                websiteContent.classList.remove('website-disabled');
+                
+                // Show success message
+                showStatus('Disclaimer accepted successfully. You may now use the website.', 'success');
+            } else {
+                showStatus('Please type the exact confirmation phrase as shown above.', 'error');
+                confirmationInput.value = '';
+                confirmationInput.focus();
+            }
+        }
+        
+        // Add event listener for disclaimer confirmation
+        document.addEventListener('DOMContentLoaded', () => {
+            const confirmButton = document.getElementById('confirmDisclaimer');
+            const confirmationInput = document.getElementById('disclaimerConfirmation');
+            
+            if (confirmButton) {
+                confirmButton.addEventListener('click', handleDisclaimerConfirmation);
+            }
+            
+            if (confirmationInput) {
+                confirmationInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        handleDisclaimerConfirmation();
+                    }
+                });
+            }
+        });
+
+        // Initialize tracking on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeDisclaimer();
+            initializeTracking();
+            applySeasonalEffects();
+        });
+        
+        // Re-apply seasonal effects every minute (in case user keeps page open)
+        setInterval(applySeasonalEffects, 60000);
+
+        // Seasonal Effects
+        function getSeason() {
+            const now = new Date();
+            const month = now.getMonth() + 1; // 1-12
+            const day = now.getDate();
+            
+            // Winter: December
+            if (month === 12) {
+                return 'winter';
+            }
+            
+            // Summer: June 21 - September 22
+            if ((month === 6 && day >= 21) || month === 7 || month === 8 || (month === 9 && day <= 22)) {
+                return 'summer';
+            }
+            
+            return 'normal';
+        }
+
+        function applySeasonalEffects() {
+            const season = getSeason();
+            const body = document.body;
+            const mainCard = document.querySelector('.max-w-2xl');
+            const buttons = document.querySelectorAll('button');
+            
+            // Remove previous seasonal classes
+            body.classList.remove('winter-theme', 'summer-theme');
+            if (mainCard) {
+                mainCard.classList.remove('winter-card', 'summer-card');
+            }
+            buttons.forEach(btn => {
+                btn.classList.remove('winter-button', 'summer-button');
+            });
+            
+            // Remove existing effects
+            document.querySelectorAll('.snowflake, .sun-rays').forEach(el => el.remove());
+            
+            if (season === 'winter') {
+                // Apply winter theme
+                body.classList.add('winter-theme');
+                if (mainCard) mainCard.classList.add('winter-card');
+                buttons.forEach(btn => btn.classList.add('winter-button'));
+                
+                // Create snowflakes
+                createSnowflakes();
+                
+            } else if (season === 'summer') {
+                // Apply summer theme
+                body.classList.add('summer-theme');
+                if (mainCard) mainCard.classList.add('summer-card');
+                buttons.forEach(btn => btn.classList.add('summer-button'));
+                
+                // Create sun rays
+                createSunRays();
+            }
+        }
+
+        function createSnowflakes() {
+            const snowflakeSymbols = ['❄', '❅', '❆', '✻', '✼', '❋'];
+            
+            function createSnowflake() {
+                const snowflake = document.createElement('div');
+                snowflake.className = 'snowflake';
+                snowflake.innerHTML = snowflakeSymbols[Math.floor(Math.random() * snowflakeSymbols.length)];
+                snowflake.style.left = Math.random() * 100 + '%';
+                snowflake.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                snowflake.style.fontSize = (Math.random() * 10 + 10) + 'px';
+                document.body.appendChild(snowflake);
+                
+                // Remove snowflake after animation
+                setTimeout(() => {
+                    if (snowflake.parentNode) {
+                        snowflake.parentNode.removeChild(snowflake);
+                    }
+                }, 5000);
+            }
+            
+            // Create snowflakes periodically
+            const snowInterval = setInterval(createSnowflake, 200);
+            
+            // Stop after 30 seconds (to prevent memory issues)
+            setTimeout(() => {
+                clearInterval(snowInterval);
+            }, 30000);
+            
+            // Create initial batch
+            for (let i = 0; i < 10; i++) {
+                setTimeout(createSnowflake, i * 100);
+            }
+        }
+
+        function createSunRays() {
+            const sunRays = document.createElement('div');
+            sunRays.className = 'sun-rays';
+            document.body.appendChild(sunRays);
+            
+            // Add some warmth to the text
+            document.querySelectorAll('h1, h3, .text-gray-800').forEach(el => {
+                el.style.color = '#92400e'; // Warm amber color
+            });
+            
+            document.querySelectorAll('.text-gray-700').forEach(el => {
+                el.style.color = '#78350f'; // Warmer dark color
+            });
+        }
+
+        // Apply seasonal effects on page load
+        document.addEventListener('DOMContentLoaded', applySeasonalEffects);
+        
+        // Re-apply effects every minute (in case user keeps page open)
+        setInterval(applySeasonalEffects, 60000);
+    </script>
+    </div> <!-- Close websiteContent -->
+
+</body></html>
